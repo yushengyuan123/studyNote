@@ -578,6 +578,8 @@ install用于在安装时指定运行的规则，它可以用来安装很多内�
 
 ## list指令
 
+[Cmake命令之list介绍 - 简书](https://www.jianshu.com/p/89fb01752d6f)
+
 `list(subcommand <list>[args...])`
 
 subcommand为具体的列表操作子命令，例如读取，查找，修改。[args...]为对列表变量操作需要的参数
@@ -585,5 +587,114 @@ subcommand为具体的列表操作子命令，例如读取，查找，修改。[
 list命令即对列表的一系列操作，cmake中的列表
 
 ### 命令解析
+
+列表读取
+
+length：子命令length用于读取列表的长度
+
+```bash
+# CMakeLists.txt
+cmake_minimum_required (VERSION 3.12.2)
+project (list_cmd_test)
+set (list_test a b c d) # 创建列表变量"a;b;c;d"
+list (LENGTH list_test length)
+message (">>> LENGTH: ${length}")
+```
+
+get：子命令get用于读取列表中指定索引的元素，可以指定多个索引
+
+```bash
+# CMakeLists.txt
+cmake_minimum_required (VERSION 3.12.2)
+project (list_cmd_test)
+set (list_test a b c d) # 创建列表变量"a;b;c;d"
+list (GET list_test 0 1 -1 -2 list_new)
+message (">>> GET: ${list_new}")
+```
+
+append：子命令用于将元素追加到列表
+
+```bash
+# CMakeLists.txt
+cmake_minimum_required (VERSION 3.12.2)
+project (list_cmd_test)
+set (list_test a b c d) # 创建列表变量"a;b;c;d"
+list (APPEND list_test 1 2 3 4)
+message (">>> APPEND: ${list_test}")
+```
+
+## find_package
+
+[cmake find_package 原理简介以及使用说明_chengde6896383的专栏-CSDN博客_cmake find_package](https://blog.csdn.net/chengde6896383/article/details/86497016)
+
+cmake不会提供任何搜索哭的便捷方法，也不会对库本身的环境变量进行设置。他仅仅是按照优先级顺序在指定的搜索路径进行查找Findxxx.cmake文件和xxxConfig.cmake文件。cmake能够找到两个两个库的任何一个我们都能够成功使用该库，也就是我们使用库内置好了cmake变量。包含库的头文件和库文件的路径信息。
+
+**当我们输入`cmake ..`之后cmake读取我们的文件当遇到了`find_package`命令的时候，cmake就会从某些路径找Findxxx.cmake文件和xxxConfig.cmake文件，然后这个文件执行后就会设置好一些cmake变量**
+
+例如：（NAME表示库的名字 比如可以用Opencv 代表Opencv库）
+
+```js
+<NAME>_FOUND
+<NAME>_INCLUDE_DIRS or <NAME>_INCLUDES
+<NAME>_LIBRARIES or <NAME>_LIBRARIES or <NAME>_LIBS
+<NAME>_DEFINITIONS
+```
+
+find_package有两种模式，一种是module模式，另外一种是config，分别对应那两个文件，默认是module模式
+
+**module模式：**
+
+Cmake会优先搜索CMAKE_MODULE_PATH指定的路径,如果在CMakeLists.txt中没有设置CMAKE_MODULE_PATH为存储Findxxx.cmake的路径，也就是说没有下面的指令：
+set(CMAKE_MODULE_PATH "Findxxx.cmake文件所在的路径")
+那么Cmake不会搜索CMAKE_MODULE_PATH指定的路径，此时Cmake会搜索第二优先级的路径，也就是<CMAKE_ROOT>/share/cmake-x.y/Mdodules （注意:x.y表示版本号。我的是3.10）。其中CMAKE_ROOT是你在安装Cmake的时候的系统路径，因为我并没有指定安装路径，所以是系统默认的路径，在我的系统中(ubuntu16.04)系统的默认路径是/usr/loacl，如果你在安装的过程中使用了
+cmake -DCMAKE_INSTALL_PREFIX=自己dir路径 ，那么此时CMAKE_ROOT就代表那个你写入的路径 。刚刚说道第一优先级的路径搜索没有找到Findxxx.cmake文件，就会到第二优先级的路径下搜索。如果Cmake在两个路径下都没有找到Findxxx.cmake文件。那么Cmake就会进入Config模式
+
+
+**config模式：**
+
+Cmake会优先搜索xxx_DIR 指定的路径。如果在CMakeLists.txt中没有设置这个cmake变量。也就是说没有下面的指令:
+set(xxx_DIR "xxxConfig.cmkae文件所在的路径")
+那么Cmake就不会搜索xxx_DIR指定的路径，此时Cmake 就会自动到第二优先级的路径下搜索，也就是/usr/local/lib/cmake/xxx/中的xxxConfig.cmake文件。
+上面主要讲了Cmake的搜索模式。如果Cmake在两种模式提供的路径中没有找到对应的Findxxx.cmake和xxxConfig.cmake文件，此时系统就会提示最上面的那些错误信息。
+
+
+
+
+
+
+# cmake如何安装第三方库
+
+对于有.cmake文件的第三方库
+
+对于需要编译源码的（src文件中含有一堆.h .cpp文件）
+
+```cmake
+file(GLOB_RECURSE <变量名> "src/.hpp" "src/.cpp" "src/.h" "src/.c") 
+add_library(<库名> STATIC ${变量名})       
+
+```
+
+
+
+对于已经编译好了第三方库
+
+```cmake
+add_library(<库名> INTERFACE IMPORTED)     #将已编译好的include和lib封装成你想要的库
+target_include_directories(<库名> INTERFACE <include文件夹所在路径>)
+target_link_directories(<库名> INTERFACE <lib文件夹所在路径>)
+target_link_libraries(<库名> INTERFACE <需要的.lib文件>)
+
+
+```
+
+
+
+将很多第三方库同意放在一文件夹中"thirdparty"下
+
+```cmake
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_target_properties(<库名> PROPERTIES FOLDER "thirdparty")
+
+```
 
 
