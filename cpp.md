@@ -2047,3 +2047,432 @@ int main() {
 有序容器-map，set这些关键字类型必须定义元素的比较方法，默认情况下使用关键字类型的 < 比较。
 
 我们可以提供一个算法自己定义这个比较操作，我们的比较函数不许满足一些特性
+
+## pair类型
+
+pair类型定义在头文件utility中。pair用来生成特定的模板，他需要提供两个类型名，两个类型名不要求是一样的
+
+```cpp
+int main (int argc, char *argv[])
+{
+  pair<string, string> atom;
+}
+```
+
+这样写没有指令初始化内容的话，pair的默认构造函数会对pair进行默认初始化，上面的例子包含两个空string的pair
+
+我们可以提供初始化器，通过first和second对下面的元素进行访问：
+
+```cpp
+int main (int argc, char *argv[])
+{
+  pair<string, string> atom{"123", "321"};
+  // 这样也是可以的
+  pair<string, string> atom("123", "321");
+  // 这样也是可以的
+  pair<string, string> atom = {"123", "321"};
+  cout << atom.first << endl;
+  cout << atom.second << endl;
+}
+```
+
+### pair类型操作
+
+`make_pair(v1, v2)`，使用v1，v2进行初始化返回一个pair类型，自动根据v1，v2类型推断pair类型
+
+`p1 == p2`，当first和second纯官员分别相等时两个pair宪哥的那个
+
+`p1 != p2`
+
+### 通过函数初始化pair
+
+```cpp
+pair<string, int>
+process(vector<string> &v) {
+  if (!v.empty()) {
+    return {v.back(), v.back().size()};
+  } else {
+    return pair<string, int>();
+  }
+}
+
+int main (int argc, char *argv[])
+{
+  vector<string> vec = {"213", "3211"};
+  
+  // process返回pair类型
+  pair<string, int> atom = process(vec); 
+
+  cout << atom.first << endl;
+  cout << atom.second << endl;
+}
+```
+
+**当我们便利或者使用begin或者last操作的时候，map的返回值就是一个pair类型，我们可以通过first和second使用里面的值**
+
+## 关联容器操作
+
+### 遍历操作
+
+可以使用while或者for循环都是可以的
+
+```cpp
+  while (mapBegin != test.cend()) {
+    cout << mapBegin->first << endl;
+    cout << mapBegin->second << endl;
+    mapBegin++;
+  }
+```
+
+
+
+### 添加元素
+
+通过insert
+
+```cpp
+int main (int argc, char *argv[])
+{
+  map<int, string> test;
+  test.insert(make_pair(1, "2"));
+  test.insert(make_pair(2, "3"));
+  auto mapBegin = test.cbegin();
+
+  for_each(test.cbegin(),test.cend(),[](const pair<int,string> &it)
+                {
+                    cout<<"first:"<<it.first<<" second:"<<it.second<<endl;
+  });
+}
+```
+
+**注意点：你添加的时候第一个元素如果是一样的，即使后面的值不同打印出来的只会有一个元素。例如第一个insert改称为`test.insert(make_pair(1, "3"));`那么只会打印`1，2`**
+
+### 删除元素
+
+删除方法erase，他接受一个key_type参数，此版本删除所有匹配给定关键字元素，返回值是0或者1。0说明删除元素不存在容器中，1表示存在
+
+```cpp
+int main (int argc, char *argv[])
+{
+  map<int, string> test;
+  test.insert(make_pair(1, "2"));
+  test.insert(make_pair(2, "3"));
+  auto mapBegin = test.cbegin();
+  test.erase(1);
+  for_each(test.cbegin(),test.cend(),[](const pair<int,string> &it)
+                {
+                    cout<<"first:"<<it.first<<" second:"<<it.second<<endl;
+  });
+}
+```
+
+### map下标操作
+
+`c[k]`
+
+`c.at(k)`
+
+### 访问元素
+
+find，我们值关心某个元素是否存在于容器中
+
+```cpp
+int main (int argc, char *argv[])
+{
+  set<int> v = {1,2};
+
+  // 返回一个迭代器指向key == 1的元素
+  v.find(1);
+  // count区别于find，count还可以知道有多少个这个key的元素存在于容器中
+  v.count(2);
+}
+```
+
+![image-20220104114822601](C:\Users\admini\AppData\Roaming\Typora\typora-user-images\image-20220104114822601.png)
+
+## 无序容器
+
+这些容器不使用比较运算符来组织元素而是使用一个**哈希函数和关键字类型的==运算符**。某些情境下维护元素的序列的代价是十分高的，此时无序容器就显得比较有用
+
+无序容器提供的操作和有序容器的类似的
+
+定义的是 `unordered_map<string, int> map`
+
+### 管理桶
+
+无序容器在存储上组织为一组桶，每个桶保存零个或者多个元素。无序容器使用哈希函数将元素映射到桶。为了访问每一个元素，容器首先计算元素的哈希值，他指出应该搜索哪个桶。容器将具有特定哈希值的所有元素保存在相同的桶中。如果容器允许重复的关键字，所有具有相同关键字的元素也都会在同一个桶中。**因此无序容器性能以来于哈希函数的质量和桶的数量和大小**
+
+计算一个哈希值和在桶中的搜索通常都是十分快的，但是假如说一个桶里面存放了十分多的元素，那么当你需要顺序查找的某个特定的元素的时候这个就需要比较大量的操作
+
+### 管理桶的函数
+
+桶接口：
+
+```cpp
+  unordered_map<string, int> map;  
+  // 正在使用的桶的数目
+  map.bucket_count();
+  // 容器能容纳的最多的桶的数量
+  map.max_bucket_count();
+  // 第n个桶中有多少个元素
+  map.bucket_size(n);
+  // 关键字k存放在第几个桶中
+  map.bucket(k);
+  // 每个桶的平均元素数量，返回float值
+  map.load_factor();
+  // map试图维护的平均桶的大小，返回float值，map会在需要时添加新的桶，是的load_factor <= max_load_factor
+  map.max_load_factor();
+  // 重组存储，使得bucket_count >= n
+  map.rehash(n);
+  // 重组存储，是的c可以保存n个元素且不必rehash
+  map.reserve(n)
+```
+
+### 无序容器对类型关键字的要求
+
+默认情况下无序容器使用关键字类型的==运算比较元素，由于c++里面为内置类型提供了hash模板了，所以我们是可以直接使用内置类型作为无序容器的关键字。
+
+但是不能直接使用自定义类型作为关键字，因为他没有hash模板。我们需要自己写hash模板
+
+那么如果我们需要使用自定义类型的话，我们需要提供两个函数的实现：
+
+- 一个函数代替==运算符
+- 一个函数计算hash
+
+具体写法还没有懂
+
+# 动态内存
+
+目前我们写的代码大多数都是使用的时候分配，使用完了就会释放。c++还支持动态内存分配，这个和前面那些的区别就是，**由用户来指定释放的时期，而不是用完就没了**
+
+目前我们使用到的内存为**静态内存**和**栈内存**静态内存用来保存一些static定义的变量和任何函数以外的全局变量。栈内存保存非static对象和函数里面定义的变量，**栈内存和静态内存都是由编译器自动销毁和自动创建**
+
+除了上面两个内存还有一个内存池，这部分被叫做**自由空间**或者**堆**。堆内存用来存储动态分配的对象——就是程序运行时分配的对象，动态对象的生存期由程序来控制，当它不再使用的时候，我们的代码必须显示销毁他
+
+管理他们是十分麻烦的
+
+## 动态存储与智能指针
+
+动态内存管理通过**new关键字**完成。delete可以用来销毁这个对象，这个和js是一样的。
+
+c++为了我们辅助我们管理这些动态内存。它提供了两种智能指针用来管理动态对象。智能指针行为和常规指针差不多，**不同在于智能指针负责自动释放所指向的对象**。
+
+- shared_ptr允许多个指针指向同一个对象
+- unique_ptr则“独占”所指向的对象
+- weak_ptr，他是一个弱引用，指向shared_ptr所管理的对象
+
+他们定义在memory头文件中
+
+## shared_ptr类
+
+智能指针是一个模板，我们创建它的时候需要提供指针可以指向的类型
+
+`shared_ptr<string> p1`
+
+用法和普通的指针是一样的
+
+shared_ptr和unique_ptr支持的操作
+
+- p，用作判断，若p指向一个对象返回true
+- *p,，解引用
+- p->mem
+- `p.get()`返回p中保存的指针，如果指针释放了对象，**那么返回的指针所指向的对象就消失了**
+- swap(p, q)，交换p和q的指针
+- `p.swap(q)`,效果和上面一样
+
+shared_ptr独有操作
+
+- `make_shared<T>(args)`返回一个shared_ptr，指向一个动态分配的类型T对象，使用args初始化对象
+- `shared_ptr<T>p(q)`p是shared_ptr q的拷贝，这个操作会递增q的引用计数器
+- p = q，这个操作和递减p的引用计数，递增q的应用技术，若p的引用技术变为0那么他管理的内存就会被释放
+- `p.unique()`若p.use_count()为1，返回true，否则false
+- p.use_count()，返回与p共享对象的智能指针的数量，可能很慢，用于debug
+
+## make_shared函数
+
+make_shared函数是最安全的分配和使用动态内存，这个函数在动态内存中分配一个对象并且初始化他，返回指向这个对象的shared_ptr。
+
+```cpp
+// 指向42的int的shared_ptr
+shared_ptr<int> p1 = make_shared<int>(42);
+auto q(p)// p和q指向相同的对象这个对象有两个引用
+```
+
+## 使用动态生存期的资源的类
+
+- 程序不知道自己需要使用多少对象
+- 程序不知道所需对象的准确类型
+- 程序需要在多个对象间共享数据
+
+### 定义一个类，它使用动态内存共享相同底层数据
+
+我们目前使用过的类中，一般分配的资源都是和对应的生存期是一致的。
+
+```cpp
+  vector<int> v1;
+  {
+    vector<int> v2 = {1,2,3};
+    v1 = v2
+  }
+```
+
+这段代码，v2赋值给v1，但是v2的生命周期结束了，**v2会被释放并且它里面的元素也一样会被释放，v1里面保存的是v2对象里面的副本**
+
+另外一个例子
+
+```cpp
+  Blob<string> b1;
+  {
+    Blob<string> b2 = {1,2,3};
+    b1 = b2
+  }
+```
+
+这段代码，v2赋值给v1，**虽然v2的生命周期结束了，但是b2里面的元素不会被释放，b1里面的元素指向的底层元素和b2是一样的**
+
+### 自定义strBlob体验共享内存
+
+```cpp
+class StrBlob {
+  public:
+    typedef vector<string>::size_type size_type;
+    StrBlob(): data(make_shared<vector<string>>()) {}
+    StrBlob(initializer_list<string> il): data(make_shared<vector<string>>(il)) {}
+    size_type size() const {
+      return data->size();
+    }
+    bool empty() const {
+      return data->empty();
+    }
+    void push_back(const string &t) {
+      data->push_back(t);
+    }
+    void pop_back() {
+      check(0, "pushback on empty strblob");
+      data->pop_back();
+    };
+    string &front() {
+      check(0, "front on empty strblob");
+      return data->front();
+    };
+    string &back() {
+      check(0, "back on empty strblob");
+      return data->back();
+    };
+  private:
+    shared_ptr<vector<string>> data;
+    void check(size_type i, const string &msg) const {
+      if (i >= data->size()) {
+        throw out_of_range(msg);
+      }
+    };
+};
+```
+
+## 直接管理内存
+
+c++语言定义了连个运算符来分配和释放动态内存：
+
+- new分配
+- delete释放
+
+相对于智能指针，这两个运算符的管理十分容易出问题
+
+### 使用new初始化对象
+
+```cpp
+ // p1指向一个动态分配的，未初始化的无名对象
+ int *p1 = new int;
+```
+
+new表达式在自由空间构造一个int型对象。并返回指向该对象的指针
+
+```cpp
+string *ps1 = new string //默认初始化为空string
+string *ps2 = new string() // 值初始化为空string
+int  *p1 = new int; // 默认初始化，p1未定义
+int  *p2 = new int(); //值初始化0
+```
+
+对于定义了自己的构造函数的类类型来说，要求值初始化是没有意义的；不管采用什么方式，对象都会通过默认构造函数初始化，就像上面的string。
+
+对于内置类型就像int，默认初始化和值初始化就不一样了，默认初始化就是未定义，值初始化会有一个默认值赋给它
+
+### auto
+
+我们可以使用auto进行初始化，让编译器来推断我们初始化的类型
+
+```
+auto p1 = new auto(obj)// p指向一个与obj类型相同的对象
+auto p2 = new auto(a,b,c) // 错误
+```
+
+如果obj是int，那么p1就是int，string就是string
+
+### new const
+
+使用new分配给一个const对象是合法的
+
+`const int *p = new const int(1024);`
+
+类似其他const对象，一个动态分配的const对象必须进行初始化，
+
+## 内存耗尽
+
+一旦一个程序用光了所有可用内存，new表达式就会失败
+
+## 释放动态内存
+
+通过delete释放内存
+
+`delete p`
+
+假如我们对一个非new的内存进行delete或者将相同的指针值释放多次，其行为都是未定义的
+
+```cpp
+int main (int argc, char *argv[])
+{
+  int i;
+  int *p = &i;
+  int *p1 = new int(1024);
+
+  // 错误，i不是指针
+  delete i;
+  // 未定义，P1指向的变量不是new
+  delete p;
+  // 正确
+  delete p1;
+  // 未定义，p1已经被释放了
+  delete p1;
+}
+```
+
+const new也是可以被释放的
+
+## 动态对象的生存期直到被释放时为止
+
+对于使用share_ptr这些智能指针创建出来的对象，到生命周期结束之后它会被自动释放，但是对于new这种的就需要手动释放才会被释放
+
+```cpp
+Foo *factory() {
+  return new Foo();
+}
+
+void useFoo (int argc, char *argv[])
+{
+  Foo *p = factory();
+}
+```
+
+**对这个函数就是useFoo生命周期结束了，这个p也不会被回收**，所以js对于堆内存有自己的一套自动回收的算法
+
+## 小结
+
+尽量不要使用这个new，尽量使用智能指针
+
+## shared_ptr和new结合使用
+
+```cpp
+shared_ptr<int> p2(new int(42));
+```
+
