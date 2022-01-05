@@ -16,7 +16,7 @@
     int i = 1;
 
     int &r;
-	// 这种写法是错误的
+    // 这种写法是错误的
     r = i
 ```
 
@@ -56,7 +56,7 @@ nullptr和null区别：
 ## 指针比较
 
 - 任何非0指针对应的条件值都是true
--  ==  != 比较。如果两个指针地址值相同，他们相等，否则不等（为null，指向同一个对象，指向同一个对象的下一个地址）
+- ==  != 比较。如果两个指针地址值相同，他们相等，否则不等（为null，指向同一个对象，指向同一个对象的下一个地址）
 - 一个指针指向某个对象，同时另一个指针指向另一个对象的下一个地址，此时两个指针值可能出现相同的情况
 
 ## void* 指针
@@ -64,8 +64,6 @@ nullptr和null区别：
 它可以存放任意对象的地址。
 
 - 不能直接操作void *所指向的对象，因为我们并不知道这个对象到底是什么
-
-
 
 # const
 
@@ -98,8 +96,6 @@ const绑定到对象上，修饰后我们不能修改它所绑定的对象
     printf("%d", *p);
 ```
 
-
-
 ## const指针
 
 ```cpp
@@ -108,7 +104,7 @@ const绑定到对象上，修饰后我们不能修改它所绑定的对象
 
     int *p = 0;
 
-	*p = 3;// 错误，不允许改变里面的值
+    *p = 3;// 错误，不允许改变里面的值
 
     curEle = p; // 错误不能修改指针指向
 
@@ -139,8 +135,6 @@ int main() {
     printf("%d", *a);
 }
 ```
-
-
 
 ## 指针，常量和类型别名
 
@@ -200,8 +194,6 @@ int main() {
 }
 ```
 
-
-
 # using
 
 他的作用就是帮助我们不需要每一次调用库的某个方法的时候都需要`xxx::xxx`这样十分繁琐，可以用using声明一次就可以了。
@@ -254,7 +246,7 @@ string类型通过下表访问也是可以的
 4. `s.size`，返回s中字符个数
 
 5. getline读取一行
-
+   
    ```
        string s;
        // 一次读取一整行，直到文件读取结束为止
@@ -263,8 +255,6 @@ string类型通过下表访问也是可以的
            cout << s << endl;
        }
    ```
-
-   
 
 # vector
 
@@ -372,14 +362,12 @@ int (*p)[10] = &a; // 指向有10个元素的数组d
     for (int value : a) {
         cout << value << endl;
     }
-    
+
     // 这样也是可以的，建议这么写，有两个原因：第一假如你需要改变数组元素值，你就需要取引用。第一个原因，如果说你的数组是一个二维数组
     for (int &value : a) {
         cout << value << endl;
     }
 ```
-
-
 
 # 运算符
 
@@ -410,26 +398,24 @@ cast-name<type>(expression)
 - 任何具有明确定义类型转换，只要不包含底层const，都可以使用static_cast
 
 - const _cast只能改变运算对象的底层const，这个作用就是把一个常量对象转变为非常量对象
-
+  
   ```
       int b = 321;
       const int *a = &b;
       int *b = a; // 这样是会报错的
-      
-      
+  ```
+
       // 你这样写之后 就可以修改b的指向了
       int d = 321;
       int c = 123;
       const int *a = &c;
       int *b = const_cast<int*>(a);
-  
+    
       b = &d;
-  
+    
       cout << *b << endl;
-  ```
 
-  
-
+```
 - reinterpret_cast
 
 - 
@@ -448,13 +434,13 @@ cast-name<type>(expression)
 #include "Sales_data.h"
 
 int main() {
-    int a = func();
+  int a = func();
 
-    cout << a << endl;
+  cout << a << endl;
 }
 
 int func() {
-    return 1;
+  return 1;
 }
 
 // Sales_data.h文件
@@ -519,7 +505,7 @@ g++ -o index index.cpp // 这条指令不行，他会找不到index.cpp
 g++ -c index.cpp share.cpp
 // 将他们链接为可执行文件
 g++ index.o share.o -o index
-    
+
 // 如果下一次share.cpp发生了改变，那么们只需要执行接可以了
 g++ -c share.cpp
 g++ index.o share.o -o index
@@ -567,11 +553,11 @@ int &smaller(int &i, int &j) {
 int main() {
     int a = 1;
     int b = 2;
-    
+
     int &small = smaller(a, b);
 
     small = 4;
-	// 这种方式b是可以被正确修改的
+    // 这种方式b是可以被正确修改的
     cout << b << endl;
     cout << small << endl;
 }
@@ -588,7 +574,7 @@ const int &smaller() {
 int main() {
     int a = 1;
     int b = 2;
-    
+
     const int &small = smaller();
 
     cout << small << endl;
@@ -599,10 +585,6 @@ int main() {
 这种写法是不行的，因为c是一个内部变量，函数结束之后这个内部变量的存储空间就会被回收，这个函数会报错，**同样返回一个指针也是错误的**
 
 ### 引用返回左值
-
-
-
-
 
 ## 使用引用形参返回额外信息
 
@@ -635,7 +617,7 @@ int main() {
 - 给人一种误解函数可以修改他的实参值
 
 - 使得你传入的参数收到了限制，你不能传入**const类型，字面量**给普通应用形参
-
+  
   ```
   void funcPointer(const int &p) {
   }
@@ -650,7 +632,7 @@ int main() {
   ```
 
 - 有时候会有意想不到的错误。假如说你的函数被另外一个函数调用但是这个函数的形参是一个const，你不是const，那么传值给你就会翻车
-
+  
   ```cpp
   void funcPointer(int &p) {
   
@@ -661,14 +643,12 @@ int main() {
   }
   ```
 
-
-
 ## 数组形参
 
 数组的两个性质对于我们定义和使用作用在数组上的函数有影响
 
 - 不允许拷贝数组，我们无法以值传递的形式使用数组参数
-
+  
   ```
   int a[1] = {1};
   
@@ -708,7 +688,7 @@ int main() {
 - 传入size长度，一般
 
 - 使用标准库规范，我们传入数组的首指针和尾指针，推荐
-
+  
   ```cpp
   void print(const int *begin, const int *end) {
       while (begin != end) {
@@ -733,8 +713,6 @@ int main() {
 
 - 假如说可变形参的类型是一样的，那么我们可以使用`initializer_list`库
 - 假如说类型不同，就是用函数重载
-
-
 
 `initializer_list<string>`和vector一样是一个泛型，你需要提前传入里面的而类型是什么，但是他和vector不同的地方在于，里面的元素是不能够更改的
 
@@ -837,7 +815,7 @@ int defaultFunc(int height = ht(), int width = 4) {
 
 ```cpp
 int test(int a, int b) {
-	return a > b ? a : b
+    return a > b ? a : b
 }
 ```
 
@@ -956,10 +934,6 @@ defaultFunc(1,2, print);
 - cpp不允许我们返回返回，但是我们可以通过返回指向函数的指针的形式来返回函数
 
 ## 返回指向函数的指针
-
-
-
-
 
 # 类
 
@@ -1149,7 +1123,7 @@ private:
 };
 
 void Sale_data::some_member() const {
-	// 声明了const直接修改accessCount是不合法的
+    // 声明了const直接修改accessCount是不合法的
     accessCount++;
     //mutable int accessCount = 0;
 }
@@ -1166,7 +1140,6 @@ void Sale_data::some_member() const {
 这个东西十分存在迷惑性，返回值有&和没有&是完全不同的
 
 ```cpp
-
 class Screen {
     public:
         Screen() = default;
@@ -1190,7 +1163,7 @@ int main() {
     Screen screen = Screen();
 
     Screen a = screen.set().changePointer();
-    
+
     cout << screen.pointer << endl;
     cout << a.pointer << endl;
 }
@@ -1248,7 +1221,7 @@ a.changePointer();
 
 ```cpp
         // 不加后面的const会报错
-		const Screen &set() const {
+        const Screen &set() const {
             return *this;
         }
 
@@ -1427,7 +1400,7 @@ class Person {
 ### 默认构造函数作用
 
 - 当我们不使用任何初始化去初始化类的时候
-
+  
   ```cpp
   class Person {
       public: 
@@ -1443,7 +1416,7 @@ class Person {
 - 当一个类本身含有类类型的成员且使用合成的默认构造函数（不懂）
 
 - 当类类型的成员没有在构造函数初始值列表显示地初始化时，举个例子
-
+  
   ```cpp
   class Person {
       public: 
@@ -1581,7 +1554,7 @@ class Data {
 
 int main() {
     Data val;
-	// 居然这么调用也是合法的？
+    // 居然这么调用也是合法的？
     int a = val.getData();
     int b = Data::getData();
     // 通过指针调用也是可以的
@@ -1725,8 +1698,6 @@ int main() {
 }
 ```
 
-
-
 equal，用来确定两个序列是否保存相同的值。他把第一个序列的每个元素和第二个序列的对应的元素进行比较，如果对应的元素相同返回true，否则返回false.
 
 他接受三个参数，前两个参数表示第一个序列的范围，第三个参数是第二个序列的首元素
@@ -1847,8 +1818,6 @@ int main() {
 }
 ```
 
-
-
 使用捕获列表
 
 `[sz](int a){ return a > sz; };`这个sz是怎么来的呢，他是外部定义来的，举另外一个例子：
@@ -1860,8 +1829,6 @@ int main() {
     cout << f() << endl;   
 }
 ```
-
-
 
 ### lambda是捕获返回的
 
@@ -1924,7 +1891,7 @@ int main() {
 ```cpp
 int main() {
     int a = 1;
-	// 这样子改变是会报错的
+    // 这样子改变是会报错的
     auto f = [=]() { return a++; };
 
     int b = f();
@@ -2015,7 +1982,7 @@ int main() {
 
     wordCount["123"] = 1;
     wordCount["321"] = 2;
-    
+
     // 也可这样来进行初始化
     wordCount = { {"xxx", "xxx"}, {"xxx", "xxx"};
 
@@ -2035,8 +2002,6 @@ int main() {
     vector<string> v1 = {"123", "321"};
     set<string> exclude(v1.begin(), v1.end());
 ```
-
-
 
 ## 关联容器特点
 
@@ -2099,7 +2064,7 @@ process(vector<string> &v) {
 int main (int argc, char *argv[])
 {
   vector<string> vec = {"213", "3211"};
-  
+
   // process返回pair类型
   pair<string, int> atom = process(vec); 
 
@@ -2123,8 +2088,6 @@ int main (int argc, char *argv[])
     mapBegin++;
   }
 ```
-
-
 
 ### 添加元素
 
@@ -2475,4 +2438,213 @@ void useFoo (int argc, char *argv[])
 ```cpp
 shared_ptr<int> p2(new int(42));
 ```
+
+
+
+## 动态数组
+
+### new和数组
+
+初始化一个数组：
+
+`int *p = new int[12];`
+
+看上去这个像是分配了一个数组，但实际上分配的内存并不是数组类型，因为不能对动态数组调用begin和end，也不能用for
+
+**动态数组并不是数组类型**
+
+### 初始化动态分配对象的数组
+
+`int *p = new int[12]{0,1,2};`
+
+### 释放动态数组
+
+`delete []pa;`两种写法有不同的含义。pa必须指向一个动态分配的数组或者为空
+
+### 智能指针和动态数组
+
+我们可以通过unique_ptr类管理动态数组// up指向一个包含10个未初始化的int数组
+
+```cpp
+// up指向一个包含10个未初始化的int数组
+
+unique_ptr<int []> up(new int[10]);
+
+// 自动用delete[]销毁指针
+
+up.release();
+```
+
+shared_ptr不直接支持管理动态数组，如果希望他能够管理动态数组，那么必须体哦那个自己的定义的删除器
+
+### allocator类
+
+某些情况下，当我们需要分配一大块内存，我们通常计划在内存这块内存上按需构造对象。这种情况下我们希望内存分配和对象构造分离。
+
+一般情况下将内存分配和对象构造组合在其可能会导致不必要的浪费：
+
+```cpp
+int main (int argc, char *argv[])
+{
+  int n = 10;
+  string *const p = new string[n];
+  string s;
+  string *q = p;
+
+  while (cin >> s && q != p + n) 
+  {
+    /* code */
+    *q++ = s;
+  }
+
+  const size_t size = q - p;
+  // 使用数组
+  delete []p;
+}
+```
+
+这段代码我们的定义了10个长度string，但是实际上我们可能不完全需要这个10个单位长度的string数组，这样我们就可能创建了一些永远也用不到的对象，这样就会有内存的浪费
+
+
+
+allocator类帮助我们将内存分配和对象的构造分离开来
+
+```cpp
+  // 可以分配string的allocator对象
+  allocator<string> alloc;
+  // 分配n个未初始化的string
+  auto const p = alloc.allocate(n)
+```
+
+allocator类及其算法
+
+- allocator<T> a定义了一个名为a的allocator对象
+
+- a.allocate(n) 分配一段原始的，为构造的内存，保存n个类型为T的对象
+
+- a.deallocate(p, n) 释放T*指针p中地址开始的内存，这块内存保存了n各类型为T的对象；p必须是一个先前由allocate返回的指针，且n必须是p创建是所要求的大小。在调用deallocate之前，用户必须对每个在这块内存中创建的对象调用destory
+
+- a.construct(p, args) p必须是一个类型为T*的指针，指向一块原始内存，arg被传递给T类型的构造函数
+
+- a.destroy(p)，销毁，执行p指向对象的析构函数
+
+allocator分配的内存是未构造的。我们按需要再次内存中构造对象。
+
+```cpp
+  alloc.construct(q++, 5, "c");
+  alloc.construct(q++, "hi");
+```
+
+还没构造对象的情况下就使用原始内存是错误的
+
+```cpp
+  // 正确
+  cout << *p << endl;
+  // 错误，q++了，指向没有构造的内存
+  cout << *p << endl;
+```
+
+当我们使用完了对象之后，必须对**每个**构造元素调用destory来销毁他们
+
+```cpp
+  while (q != p)
+  {
+    alloc.destroy(--q);
+  }
+```
+
+一旦元素销毁后，就可以重新使用这部分内存来保存其他string
+
+`alloc.deallocate(p, n);`
+
+# 拷贝控制
+
+如果一个构造函数大的第一个参数是自身类类型的引用，且任何额外参数都有默认值，则此构造函数是拷贝构造函数
+
+```cpp
+class Foo {
+  public:
+    // 默认构造函数
+    Foo();
+    // 拷贝构造函数
+    Foo(const Foo&);
+};
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 其他指令
+
+## #pragma命令详解
+
+#pragma指示是每个编译程序在保留c和c++语言的整体兼容性时提供个不同的机器和操作系统特定的功能
+
+### 语法
+
+#pragma token_string
+
+“token_string”是一系列字符用来给出所需的特定编译程序指令和参数。如果编译程序发现它不认得一个编译指示，他将给出一个警告，但是编译会继续下去。
+
+
+
+#### comment指令
+
+#pragma comment( comment-type [, commentstring] )
+
+将描述记录安排到目标文件或可执行文件中去，comment-type是下面说明的五个预定义标识符中的一个，用来指定描述记录类型。可选的commentstring是一个字符串文字值用于为一些描述类型提供附加的信息。因为commentstring是一个字符串文字值，所以它遵从字符串文字值的所有规则，例如换码字符、嵌入的引号（"）和联接。
+
+comment-type类型：
+
+compiler 在目标文件中繁殖编译程序名和版本号
+
+exestr 将commentstring放置到目标文件中去
+
+lib 将一个库搜索记录放置到目标文件中去。该描述类型必须包含你要连接程序搜索的库名和
+
+commentstring参数。因为在目标文件中该库名先于默认的库搜索记录，所以链接程序将如果你在命令行输入这些库一样搜索它。你可以在一个源文件中防止多个库的搜索记录，每个记录将按照他们出现在源文件中的顺序出现在目标文件
+
 
