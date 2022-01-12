@@ -649,18 +649,12 @@ set(CMAKE_MODULE_PATH "Findxxx.cmake文件所在的路径")
 那么Cmake不会搜索CMAKE_MODULE_PATH指定的路径，此时Cmake会搜索第二优先级的路径，也就是<CMAKE_ROOT>/share/cmake-x.y/Mdodules （注意:x.y表示版本号。我的是3.10）。其中CMAKE_ROOT是你在安装Cmake的时候的系统路径，因为我并没有指定安装路径，所以是系统默认的路径，在我的系统中(ubuntu16.04)系统的默认路径是/usr/loacl，如果你在安装的过程中使用了
 cmake -DCMAKE_INSTALL_PREFIX=自己dir路径 ，那么此时CMAKE_ROOT就代表那个你写入的路径 。刚刚说道第一优先级的路径搜索没有找到Findxxx.cmake文件，就会到第二优先级的路径下搜索。如果Cmake在两个路径下都没有找到Findxxx.cmake文件。那么Cmake就会进入Config模式
 
-
 **config模式：**
 
 Cmake会优先搜索xxx_DIR 指定的路径。如果在CMakeLists.txt中没有设置这个cmake变量。也就是说没有下面的指令:
 set(xxx_DIR "xxxConfig.cmkae文件所在的路径")
 那么Cmake就不会搜索xxx_DIR指定的路径，此时Cmake 就会自动到第二优先级的路径下搜索，也就是/usr/local/lib/cmake/xxx/中的xxxConfig.cmake文件。
 上面主要讲了Cmake的搜索模式。如果Cmake在两种模式提供的路径中没有找到对应的Findxxx.cmake和xxxConfig.cmake文件，此时系统就会提示最上面的那些错误信息。
-
-
-
-
-
 
 # cmake如何安装第三方库
 
@@ -671,10 +665,7 @@ set(xxx_DIR "xxxConfig.cmkae文件所在的路径")
 ```cmake
 file(GLOB_RECURSE <变量名> "src/.hpp" "src/.cpp" "src/.h" "src/.c") 
 add_library(<库名> STATIC ${变量名})       
-
 ```
-
-
 
 对于已经编译好了第三方库
 
@@ -683,18 +674,11 @@ add_library(<库名> INTERFACE IMPORTED)     #将已编译好的include和lib封
 target_include_directories(<库名> INTERFACE <include文件夹所在路径>)
 target_link_directories(<库名> INTERFACE <lib文件夹所在路径>)
 target_link_libraries(<库名> INTERFACE <需要的.lib文件>)
-
-
 ```
-
-
 
 将很多第三方库同意放在一文件夹中"thirdparty"下
 
 ```cmake
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_target_properties(<库名> PROPERTIES FOLDER "thirdparty")
-
 ```
-
-
