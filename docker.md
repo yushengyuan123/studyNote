@@ -11,5 +11,3 @@
 dockerfile的作用就是定制我们的镜像，使用docker build命令会根据我们的dockerfile文件创建处一个新的镜像，不是创建容器！！！！！！所以dockerfile的作用就是帮助我们定制镜像的
 
 build完之后，我们就可以run创建容器了
-
-
