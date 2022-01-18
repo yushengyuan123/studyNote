@@ -270,8 +270,6 @@ static int uv__async_start(uv_loop_t* loop) {
 
 然后后面执行`uv__io_start`函数
 
-
-
 ```c
 void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   assert(0 == (events & ~(POLLIN | POLLOUT | UV__POLLRDHUP | UV__POLLPRI)));
@@ -307,8 +305,6 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 ```
 
 这个的作用就是把我们的这个watcher_queue加入到loop->watcher_queue中。
-
-
 
 ### 总结下这个流程
 
@@ -358,10 +354,6 @@ while (!QUEUE_EMPTY(&loop->watcher_queue)) {
 在我们的线程池里面线程，当完成了任务的时候就会执行一个叫做`uv__async_send`函数，这个函数就是会执行write方法，向fd去写入东西。
 
 在poll run的过程中，会取出epoll event。执行他的回调函数，对于fs的回调函数，他的回调函数就是`uv__async_io`函数，会从fd去read东西，从而实现文件读取
-
-
-
-
 
 ## eventfd介绍
 

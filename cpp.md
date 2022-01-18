@@ -2594,3 +2594,66 @@ exestr 将commentstring放置到目标文件中去
 lib 将一个库搜索记录放置到目标文件中去。该描述类型必须包含你要连接程序搜索的库名和
 
 commentstring参数。因为在目标文件中该库名先于默认的库搜索记录，所以链接程序将如果你在命令行输入这些库一样搜索它。你可以在一个源文件中防止多个库的搜索记录，每个记录将按照他们出现在源文件中的顺序出现在目标文件
+
+
+
+
+
+# 内部库文件
+
+## container_of
+
+[C语言高级用法---container_of()_终身学习的程序猿-CSDN博客_containerof](https://blog.csdn.net/rosetta/article/details/90751028)
+
+这个函数的功能就是给定结构体某个成员的地址，该结构体类型和该成员的名字，获取这个成员所在的结构体变量的首地址
+
+**找出他的地址有什么用呢？找出他的地址意味着就是他的指针，你就可以访问它里面的变量了**
+
+参数：
+
+- ptr：结构体变量某个成员的地址
+
+- type：结构体类型
+
+- member：该结构体变量的具体名字
+
+比如如下结构体struct ipstore，假设已经有一个变量struct ipstore *ist1;，并给ist1分配好了内存且进行了初始化，在已知结构体成员list的地址的情况下，获取list所在的结构体变量ist1的首地址。此时有人就会问了，这里ist1明明是已知的，这么做不是自己给自己找麻烦吗？这是个好问题，但是不要忘记，本文到目前为止只是讲解container_of()的含义，并没有说它适合用在什么样的场景下，因为有一种使用场景，当链表是通过list串起来的时候，此时并不知道ist1的首地址，反而是知道list的地址，这时container_of()就非常合适了，内核中的链表就是这么做的。
+
+```c
+struct list_head {
+    struct list_head *next；
+    struct list_head  *prev;
+};
+
+struct ipstore{
+    unsigned long time;
+    __u32 addr[4];
+    struct list_head list;
+};
+
+
+```
+
+所以，调用container_of()时具体的传参如下所示，其返回的结果是ist1的地址。
+
+`container_of(ist1->list, struct ipstore, list)`
+如下测试代码，通过container_of()取得了ip1的地址。
+
+```c
+void container_of_test()
+{
+    struct ipstore ip1;
+    struct ipstore *p1;
+
+    p1 = container_of(&ip1.list, struct ipstore, list);
+
+    printf("ip1's addr:0x%0x\n", &ip1);
+    printf("p1's  addr:0x%0x\n", p1);
+}
+
+```
+
+
+[root@xxx c_base]# ./a.out
+ip1's addr:0xa5fe1fe0
+p1's  addr:0xa5fe1fe0

@@ -197,3 +197,10 @@ thread1 returns 3078212464
 Main thread exit...
 [root@robot ~]# 
 ```
+
+## wait和timedwait区别
+
+| sleep                  | 线程等待，等待期间线程无法唤醒。           |
+| ---------------------- | -------------------------- |
+| pthread_cond_wait      | 线程等待信号触发，如果没有信号触发，无限期等待下去。 |
+| pthread_cond_timedwait | 线程等待一定的时间，如果超时或有信号触发，线程唤醒。 |
