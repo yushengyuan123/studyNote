@@ -516,3 +516,29 @@ struct timeval {
     long    tv_usec;        /* and microseconds */
 };
 ```
+
+
+
+# libuv对于tcp处理
+
+首先需要调用libuv里面的tcp接口先创建出一个tcp的socketfd，如果有链接进来的话，就会对这个socketfd进行write，这个时候我们通过epoll我们就能够监听到了有新的链接进入，这个时候通过libuv的回调函数机制，调用on_new_connection回调函数，这个时候通过这个on_new_connection回调函数再调用一次tcp的接口，把这个客户链接加入到epoll中，实现这个监听的过程。
+
+## 对于非tcp这种原生不支持epoll的处理
+
+通过epoll_event虚拟出来一个epollfd，加入到epoll的监听中。
+
+
+
+# libuv对于idle prepare处理
+
+在libuv中应该是没有对于这几个时期的准确使用，更多的应该是留下一个缺口，给使用libuv的用户，把他们的自定义任务加入到这些时期中。
+
+
+
+# 遗留问题
+
+1. 研究一下tcp是怎么走的
+
+2. 再深入了解一下epoll为什么是高校的，包括这个epoll_event
+
+3. idle，prepare，check阶段到底做了什么？
