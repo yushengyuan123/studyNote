@@ -28,10 +28,100 @@ node是一个进程，那么启动进程肯定是有一个main函数的，这个
 
 所以说我觉得node当初设计的初衷就不是用来搞服务器的。
 
-
-
 # 继续探索的问题
 
 1. 探索一下node的进程，cluster模块和线程是怎么实现的
 
 2. 继续探索libuv在node中的使用，把整一套事件循环串联起来
+
+# child_process
+
+child__process是ChildProcess类实例，他js层是继承了EventEmitter事件中心
+
+## spawn
+
+```cpp
+function spawn(file, args, options) {
+  options = normalizeSpawnArguments(file, args, options);
+  validateTimeout(options.timeout);
+  validateAbortSignal(options.signal, 'options.signal');
+  const killSignal = sanitizeKillSignal(options.killSignal);
+  // 
+  const child = new ChildProcess();
+}
+```
+
+ChildProcess是一个js类，里面有一个handle属性，是一个c++类，创建出来的进程对象。
+
+这个c++对象有spawn方法，本质上调用了libuv的方法uv_spawn方法创建子进程，里面本质就是c语言的fork函数
+
+## c语言的进程通信
+
+### pipe函数
+
+```cpp
+#include<unistd.h>
+int pipe(int fd[2]);
+```
+
+pipe函数可用于创建一个管道，已实现进程通信
+
+pipe函数定义中的fd参数是一个大小为2的一个数组类型的指针。该函数成功时返回0，并将一对打开的文件描述符值填入fd参数指向的数组。失败时返回 -1并设置errno。
+
+通过pipe函数创建的这两个文件描述符 fd[0] 和 fd[1] 分别构成管道的两端，往 fd[1] 写入的数据可以从 fd[0] 读出。并且 fd[1] 一端只能进行写操作，fd[0] 一端只能进行读操作，不能反过来使用。要实现双向数据传输，可以使用两个管道。
+
+### fork函数
+
+```c
+   #include <sys/types.h>
+
+    #include <unistd.h>
+
+    pid_t fork(void);
+```
+
+由f o r k创建的新进程被称为子进程（ child process）。该函数被调用一次，但返回两次。两次返回的区别是子进程的返回值是0，而父进程的返回值则是新子进程的进程I D。将子进程I D返回给父进程的理由是：因为一个进程的子进程可以多于一个，所以没有一个函数使一个进程可以获得其所有子进程的进程I D。f o r k使子进程得到返回值0的理由是：一个进程只会有一个父进程，所以子进程总是可以调用g e t p p i d以获得其父进程的进程I D (进程ID 0总是由交换进程使用，所以一个子进程的进程I D不可能为0 )。
+
+### 普通管道实现
+
+```c
+#include <stdio.h>
+  2 #include <unistd.h>
+  3 #include <string.h>
+  4 #include <stdlib.h>
+  5
+  6 int main(void)
+  7 {
+  8     int fds[2];
+  9     if(pipe(fds)==-1)
+10         perror("pipe"),exit(1);
+11     pid_t pid=fork();
+12     if(pid==-1) perror("fork"),exit(1);
+13
+14     if(pid==0){//子进程
+15         close(fds[0]);//关闭读端
+16         sleep(1);
+17         write(fds[1],"abj",3);//在写端上写入abj
+18         close(fds[1]);//再关闭写端
+19         exit(0);
+20     }else{//父进程
+21         close(fds[1]);//关闭写端
+22         char buf[100]={};
+23         int r=read(fds[0],buf,100);//将管道中的数据读到buf中，返回值是实际读取的字节数
+24         if(r==0)//读取的自己为0，代表读取文件结束
+25         printf("read EOF\n");
+26         else if(r==-1){
+27             perror("read"),exit(1);
+28         }
+29         else if(r>0)
+30             printf("buf=[%s]\n",buf);
+31         close(fds[0]);//读取成功，关闭读端
+32         exit(0);
+33     }
+34 }
+35
+```
+
+## fork方法原理
+
+fork方法本质上就是spawn，底层还是调用了spawn方法，但是只是把它的几个参数写死了。例如第一个参数spawn命令行参数置为node，第二个参数帮你写死了路径。

@@ -146,8 +146,6 @@ document.getElementById('foo').className = applyColor
 
 这个不能够直接使用，需要进行配置
 
-
-
 # 静态资源处理
 
 导入一个静态资源会返回解析后的url
@@ -323,8 +321,6 @@ build: {
 - name： string，暴露的全局变量
 - formats：es，cjs，umd，iife，[]，数组。数组需要包含umd或者iife，默认[es, umd]
 - filename：string是打包的packjson name的配置项
-
-
 
 # 静态站点部署
 
@@ -613,8 +609,6 @@ const exmaplePlugin = () => {
 }
 ```
 
-
-
 ### configureServer
 
 用于配置开发服务器的钩子。常见使用在内部connect应用程序中添加自定义中间件
@@ -702,7 +696,7 @@ interface HmrContext {
 - 过滤和缩小受影响的模块列表，是hmr更准确
 
 - 返回一个空数组，并通过向客户端发送自定义事件来执行完成的自定义hmr处理
-
+  
   ```js
   handleHotUpdate({ server }) {
     server.ws.send({
@@ -713,9 +707,9 @@ interface HmrContext {
     return []
   }
   ```
-
+  
   客户端代码应该使用hmr api注册响应的处理器
-
+  
   ```js
   if (import.meta.hot) {
     import.meta.hot.on('special-update', (data) => {
@@ -741,8 +735,6 @@ interface HmrContext {
 # js api
 
 vite的js api是完全类型化的
-
-
 
 # 使用vite打包一个类库
 
