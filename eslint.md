@@ -46,14 +46,10 @@ extends属性
 - 派生配置：扩展基本配置的配置
 - 生成实际配置：将派生配置合并到基本配置中的结果
 
-
-
 extends属性的属性值可以是：
 
 - 指定配置文件字符串（路径，配置文件名称或eslint：all）
 - 一个字符串数组，其中每个附加配置都扩展了前面的配置
-
-
 
 ## 重写覆盖规则
 
@@ -78,7 +74,7 @@ extends配置是忽略那些eslint包的 `eslint-config-`前缀的，加入你�
 
 ```js
 {
-	extends: standard
+    extends: standard
 }
 ```
 
@@ -247,14 +243,12 @@ sourceType：script或者module。您的代码是否在 ECMAScript 中
 - ```
   ecmaFeatures
   ```
-
+  
    \- 一个对象，指示您要使用哪些附加语言功能：
-
+  
   - `globalReturn`- 允许`return`全局范围内的语句
   - `impliedStrict`- 启用全局[严格模式](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)（如果`ecmaVersion`是 5 或更大）
   - `jsx`- 启用[JSX](https://facebook.github.io/jsx/)
-
-
 
 # 命令行
 
@@ -337,10 +331,6 @@ eslint --global require,exports:true file.js
 - constructor-super，要求构造函数中有super调用
 - no-var，要求使用let，const而不是var
 
-
-
-
-
 # formatters
 
 **这个选项的作用就是，控制eslint对文件进行lint之后，输出的报告格式**，感觉用不上
@@ -357,10 +347,6 @@ eslint带有几个内置的格式化程序来控制linting的结果外观，并�
 - .....
 
 举个例子：
-
-
-
-
 
 # 创建自定义规则
 
@@ -474,8 +460,6 @@ create: function(context) {
 
 - forStatement，
 
-
-
 ## context对象
 
 contxt对象包含了eslint解析过程很多的上下文信息
@@ -504,7 +488,7 @@ contxt对象包含了eslint解析过程很多的上下文信息
 ## getScope返回的作用域类型
 
 | AST Node Type             | Scope Type |
-| :------------------------ | :--------- |
+|:------------------------- |:---------- |
 | `Program`                 | `global`   |
 | `FunctionDeclaration`     | `function` |
 | `FunctionExpression`      | `function` |
@@ -662,8 +646,6 @@ exports.parseForESLint = function(code, options) {
 };
 ```
 
-
-
 ## ast规范
 
 ### 所有节点
@@ -692,8 +674,6 @@ token，是一个token类型数组，将会影响节点的行为。任何的空�
 
 comments，是注释标记数组
 
-
-
 # 插件开发
 
 每个插件是一个命名格式为`eslint-plugin-<plugin-name>`的npm包。
@@ -720,7 +700,7 @@ module.exports = {
 {
     "plugins": ["example"],
     "env": {
-    	// 用在这里的
+        // 用在这里的
         "example/custom": true
     }
 }

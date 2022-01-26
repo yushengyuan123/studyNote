@@ -74,6 +74,138 @@
 
 - UV_RUN_NOWAIT：轮询一次io，但是在pending阶段没有回调的时候不会发生阻塞。当完成了所以handle和request之后这个会返回0，如果有回调还没有执行的话（意味着你应该再次执行事件循环的时候）这个就会返回一个非0
 
+## uv_spawn
+
+这个本质上就是底层的fork
+
+### uv_pipe
+
+这个pipe看着就像是和socket相关的，没看到似乎和管道有什么关系
+
+uv_pipe_bind（文档上的作用就是：将管道绑定到文件路径 (Unix) 或名称 (Windows)。），这个本质上就是通过uv_socket创建socketfd，然后把这个fd返回
+
+```cpp
+err = uv__socket(AF_UNIX, SOCK_STREAM, 0);
+
+int uv__socket(int domain, int type, int protocol) {
+  int sockfd;
+  int err;
+
+#if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
+  sockfd = socket(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
+  if (sockfd != -1)
+    return sockfd;
+
+  if (errno != EINVAL)
+    return UV__ERR(errno);
+#endif
+
+  sockfd = socket(domain, type, protocol);
+  if (sockfd == -1)
+    return UV__ERR(errno);
+
+  err = uv__nonblock(sockfd, 1);
+  if (err == 0)
+    err = uv__cloexec(sockfd, 1);
+
+  if (err) {
+    uv__close(sockfd);
+    return err;
+  }
+
+#if defined(SO_NOSIGPIPE)
+  {
+    int on = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));
+  }
+#endif
+
+  return sockfd;
+}
+```
+
+uv_listen uv_listen会判断我们stream的类型从而创建出tcp管道，还是一个pipe管道
+
+```cpp
+int uv_listen(uv_stream_t* stream, int backlog, uv_connection_cb cb) {
+  int err;
+  // stream->type这个字段在pipe init阶段已经进行过了初始化，是这个UV_NAMED_PIPE
+  // 那么他底层就是不进行tcp监听
+  switch (stream->type) {
+  case UV_TCP:
+    err = uv_tcp_listen((uv_tcp_t*)stream, backlog, cb);
+    break;
+
+  case UV_NAMED_PIPE:
+    err = uv_pipe_listen((uv_pipe_t*)stream, backlog, cb);
+    break;
+
+  default:
+    err = UV_EINVAL;
+  }
+
+  if (err == 0)
+    uv__handle_start(stream);
+
+  return err;
+}
+```
+
+其实整一个都是利用socket，整理一下这个命名管道方式的流程
+
+首先进行stream的初始化，然后要去bind，把socket进行绑定，然后listen，listen根据stream的类型去区分调用，最后使用socket的listen去监听
+
+其中绑定了两个回调函数
+
+```cpp
+  // uv_connection_cb cb这个cb是外面来接口的cb
+  handle->connection_cb = cb;
+  // 这个cb是内部的cb
+  handle->io_watcher.cb = uv__server_io;
+```
+
+在事件循环开始的时候uv_run遍历的时候，就会取出`handle->io_watcher.cb = uv__server_io;`这一个cb执行看下这个cb
+
+uv__server_io这个一个函数，本质上调用了uv_accept。里面本质调用了socket accept接口
+
+```c
+peerfd = accept(sockfd, NULL, NULL);
+```
+
+看到后面两个参数时null，感觉有点像是用一个socket去模拟命名管道，而不是这的是一个tcp，问题来了，你怎么去连这个socket呢
+
+最后在这个server_io回调函数中执行了connection_cb回调
+
+`stream->connection_cb(stream, err);`
+
+从而执行我们的接口用户自定义回调
+
+#### UV_TCP模式和UV_NAMED_PIPE区别
+
+UV_TCP这中模式感觉应该就是会绑定到一个ip地址上面，UV_NAMED_PIPE这个是没有的。
+
+我们使用，UV_NAMED_PIPE本质上是一个命名管道实现的进程通信，通过一个中间文件
+
+### 使用uv_pipe命名管道例子
+
+[用libuv库实现管道进程间通信_hello_wcx的博客-CSDN博客_libuv pipe](https://blog.csdn.net/hello_wcx/article/details/78924575)
+
+先创建一个服务端，通过一个pipeName。
+
+然后创建一个客户端，通过`uv_pipe_connect`根据pipeName连接上去
+
+### 本质区别
+
+[整理：Linux网络编程之sockaddr与sockaddr_in,sockaddr_un结构体详细讲解_我是传奇-CSDN博客_linux sockaddr](https://blog.csdn.net/gladyoucame/article/details/8768731)
+
+看这都像是利用socket的编程接口，但是实际上是不同的
+
+通过命名管道通信本质上是使用一个unix套接字，这个东西不同于网络套接字，他是一种本地的套接字
+
+创建和绑定步骤和网络套接字类似，但是传入的参数是有所区别的
+
+整个使用的方法和网络套接字类似，只是一些传参或者使用的结构体等有一点不同
+
 # 非网络的模拟
 
 ## 线程池
@@ -517,8 +649,6 @@ struct timeval {
 };
 ```
 
-
-
 # libuv对于tcp处理
 
 首先需要调用libuv里面的tcp接口先创建出一个tcp的socketfd，如果有链接进来的话，就会对这个socketfd进行write，这个时候我们通过epoll我们就能够监听到了有新的链接进入，这个时候通过libuv的回调函数机制，调用on_new_connection回调函数，这个时候通过这个on_new_connection回调函数再调用一次tcp的接口，把这个客户链接加入到epoll中，实现这个监听的过程。
@@ -527,13 +657,9 @@ struct timeval {
 
 通过epoll_event虚拟出来一个epollfd，加入到epoll的监听中。
 
-
-
 # libuv对于idle prepare处理
 
 在libuv中应该是没有对于这几个时期的准确使用，更多的应该是留下一个缺口，给使用libuv的用户，把他们的自定义任务加入到这些时期中。
-
-
 
 # 遗留问题
 
