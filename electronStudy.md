@@ -1,0 +1,21 @@
+# electron暴露API
+
+首先electron对typescript文件进行了转义，使用webpack的代码被定义在了build.gn中。
+
+接下来就可以加载并执行用户的入口脚本文件了。
+
+通过一系列这样的编译脚本，Electron把lib目录下的TypeScript代码编译成asar_bundle.js、browser_init.js、isolated_bundle.js、renderer_init.js、sandbox_bundle.js、worker_init.js六个JavaScript文件。
+
+接着通过一个python脚本去处理这些被js文件
+
+这个Python脚本把上述几个JavaScript文件的内容转换成ASCII码的形式存放到一个C数组中，最终会生成一个名为electron_natives.cc的文件
+
+这个c++文件有一段逻辑就是读取这些二进制的内容并且执行他们。这个时候我们ts的方法就会被执行了
+
+## 打补丁
+
+Electron的编译工具在编译Node.js的源码前，会以补丁的方式把electron_natives.cc注入到Node.js的源码中去
+
+NativeModuleLoader类会在主进程初始化Node.js环境时被实例化，也就是说，我们上一小节讲的Node.js环境初始化成功后，这些TypeScript逻辑就被执行了。
+
+总的来说就是把electron的这个自定义模块通过打补丁的方式注册为node的核心模块
